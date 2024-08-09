@@ -1,0 +1,45 @@
+artifacts_root: MLartifacts
+
+data_ingestion:
+  root_dir: MLartifacts/data_ingestion
+  source_url: https://universe.roboflow.com/ds/xVFScOg5j2?key=93Tq5paN8Z
+  local_data: MLartifacts/data_ingestion/data.zip
+  unzip_dir: MLartifacts/data_ingestion/data
+
+# timy-dset "https://universe.roboflow.com/ds/xVFScOg5j2?key=93Tq5paN8Z"
+# E waste dataset "https://universe.roboflow.com/ds/i02h52wl6q?key=ZM0MEFLZ5R"
+# COCO data     "https://public.roboflow.com/ds/fYqIOuhVKK?key=sAOM4f2h70"
+
+#new custom dataset
+custom_dataset:
+  classes: ['Drill','Survivor']
+  new_data_path: MLartifacts/data_ingestion
+  dataset_name: version1
+
+data_validation:         
+  data_val_dir: MLartifacts/data_validation
+  data_val_req: 
+    - train
+    - valid
+    - data.yaml
+
+train_log_config:  
+  model: yolov8n.pt # choices="yolov8n","yolov8s","yolov8m","yolov8l","yolov8x"
+  mlflow_uri: http://127.0.0.1:5000
+  experiment_name: trail_exp
+  model_name: miniv8
+
+param:
+  optimizer: auto # other choices=['SGD', 'Adam', 'AdamW', 'RMSProp']
+  lr0: 0.02      # learning rate 
+  save_period: -1
+  batch: 30
+  epochs: 10
+  resume: False
+  seed: 0
+  imgsz: 640 
+
+# evaluation:
+#   path_of_model: artifacts/trained_model/Trainedv8.pt
+#   trainig_data: artifacts/data_ingestion/data
+#   mlflow_uri: https://dagshub.com/Arvindnbr/MLOPs.mlflow

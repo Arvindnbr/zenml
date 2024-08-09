@@ -1,0 +1,26 @@
+numpy
+matplotlib
+opencv-python
+pillow
+pyyaml
+requests
+scipy
+torch
+torchvision
+tqdm
+pandas
+seaborn
+ultralytics-thop
+ultralytics
+ensure==1.0.2
+python-box==6.0.2
+dvc
+joblib
+Flask
+Flask-Cors
+mlflow
+onnxruntime
+zenml
+zenml[server]   
+
+-e . 
