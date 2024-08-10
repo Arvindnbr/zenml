@@ -64,6 +64,14 @@ class ConfigurationManager:
         )
         return params
     
+    def get_threshold(self)-> TresholdMetrics:
+        threshold = self.config.threshold
+        metrics = TresholdMetrics(
+            mAP50= threshold.mAP50,
+            mAP50_95= threshold.mAP50_95
+        )
+        return metrics
+    
 
 
 

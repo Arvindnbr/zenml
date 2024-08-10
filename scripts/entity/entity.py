@@ -14,7 +14,7 @@ class DataSetConfig:
     classes: list
     new_data_path: Path
     dataset_name: str
-    
+
 @dataclass(frozen=True)
 class DataValidationConfig:
     root_dir: Path
@@ -37,3 +37,8 @@ class Params:
     resume: bool
     seed: int
     imgsz: int 
+
+@dataclass(frozen=True)
+class TresholdMetrics:
+    mAP50: float
+    mAP50_95: float

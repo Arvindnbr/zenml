@@ -89,7 +89,7 @@ def load_model(model_checkpoint: str,
     return YOLO(model_checkpoint)    
 
 @step(output_materializers={"Trained_YOLO": UltralyticsMaterializer},
-      enable_cache=False,
+      enable_cache=True,
       )
 def Trainer(config:TrainLogConfig,val_config: DataValidationConfig,
             params:Params,validation_status: bool,current_dset: str,

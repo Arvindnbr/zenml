@@ -19,3 +19,6 @@ zenml stack register custom_stack \
     -a local_store \
     -o local_orchestrator \
     --set
+
+to deploy the model to mlflow
+zenml model-deployer register mlflow_deployer --flavor=mlflow

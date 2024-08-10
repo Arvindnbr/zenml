@@ -30,14 +30,18 @@ train_log_config:
   model_name: miniv8
 
 param:
-  optimizer: auto # other choices=['SGD', 'Adam', 'AdamW', 'RMSProp']
-  lr0: 0.02      # learning rate 
+  optimizer: auto # other choices=['auto', 'SGD', 'Adam', 'AdamW', 'RMSProp']
+  lr0: 0.03      # learning rate 
   save_period: -1
-  batch: 30
-  epochs: 10
+  batch: 50
+  epochs: 1
   resume: False
   seed: 0
-  imgsz: 640 
+  imgsz: 640
+
+threshold:
+  mAP50: 0.02
+  mAP50_95: 0.02
 
 # evaluation:
 #   path_of_model: artifacts/trained_model/Trainedv8.pt
