@@ -1,6 +1,8 @@
 # zenml
 
 
+in the config yaml file change the artifacts folder to data in all directory for smoooth flow
+
 try to install zenml to the zenml directory rather than the scripts part
 then install zenml[server]
 

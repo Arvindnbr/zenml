@@ -166,3 +166,4 @@ artifacts/
 mlruns/
 runs/
 MLartifacts/
+data/
