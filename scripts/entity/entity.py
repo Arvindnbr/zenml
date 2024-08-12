@@ -42,3 +42,7 @@ class Params:
 class TresholdMetrics:
     mAP50: float
     mAP50_95: float
+
+@dataclass(frozen=True)
+class Evaluation:
+    name: str

@@ -9,6 +9,10 @@ from scripts.steps.log_mlflow import register_model
 from scripts.config.configuration import ConfigurationManager
 from scripts.entity.entity import DataIngestionConfig, DataSetConfig, DataValidationConfig, TrainLogConfig, Params, TresholdMetrics
 from scripts.steps.best_model import production_model
+from typing import Annotated, Any, Dict, Tuple
+import logging
+from ultralytics import YOLO
+from zenml import ArtifactConfig, step, log_artifact_metadata
 
 
 
@@ -18,21 +22,23 @@ def data_pipeline(config: DataIngestionConfig,
                   val_config: DataValidationConfig,
                   trainlog_config: TrainLogConfig, 
                   parameters: Params,
-                  threshold: TresholdMetrics 
-                  ):
+                  threshold: TresholdMetrics
+                  )->Tuple[Annotated[str, ArtifactConfig(name="Production_YOLO_model", is_model_artifact=True)],
+                           Annotated[str, ArtifactConfig(name="Dataset",is_model_artifact=True)]]:
+    
     datapath = data_ingest(config)
     print(datapath)
-    config1 = ConfigurationManager()
-    dsort = config1.get_Dataset_config()
 
-    if len(dsort.classes) != 0:
+    if len(dset_config.classes) != 0:
         current_dset = data_sort(dset_config, datapath)
         print(current_dset)
     else:
         current_dset = datapath
         print(current_dset)
-
-    status = validator(val_config,current_dset)
+    
+    dset = current_dset
+    status, dir = validator(val_config,dset)
+    logging.info(f"status:{status} and current_dset: {dset}")
     yolo_model = load_model(trainlog_config.model)
     yolo_model, metrics, names, save_dir = Trainer(config=trainlog_config,
                                                    val_config=val_config,
@@ -46,7 +52,8 @@ def data_pipeline(config: DataIngestionConfig,
                                            model_name = trainlog_config.model_name,
                                            save_dir = save_dir
                                            )
-    production_model(run_id, threshold)
+    name, version, model = production_model(run_id, threshold)
+    return model, dset
 
 
 

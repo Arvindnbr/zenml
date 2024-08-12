@@ -1,7 +1,8 @@
 from typing import Annotated, Any, Dict, Tuple
 import mlflow
 import logging
-from zenml import get_step_context, step
+from zenml import step, ArtifactConfig
+from ultralytics import YOLO
 from dataclasses import asdict
 from zenml.logger import get_logger
 from scripts.config.configuration import TresholdMetrics
@@ -72,7 +73,8 @@ class ProductionModel:
 @step   
 def production_model(run_id: str,  
                      thresholds:TresholdMetrics) -> Tuple[Annotated[str, "Production model"],
-                                                          Annotated[int, "version"]]:
+                                                          Annotated[int, "version"],
+                                                          Annotated[str, ArtifactConfig(name="Production_YOLO", is_model_artifact=True)]]:
 
     client = mlflow.tracking.MlflowClient()
     prod = ProductionModel()
@@ -100,11 +102,17 @@ def production_model(run_id: str,
                 best_run_id = run_id
                 best_metrics = metrics
                 best_version = int(version_info['version'])
+                artifact = version_info['source']
+                artifact = artifact.replace("mlflow-artifacts:", "mlartifacts")
+                model = f"{artifact}/artifacts/best.pt"
+                
+                
         
     if best_run_id is not None:
         print(f"Best version: {best_version}")
         print(f"Best run ID: {best_run_id}")
         print(f"Best metrics: {best_metrics}")
+        print(f"artifact: {artifact}/artifacts/best.pt")
         
         client.transition_model_version_stage(
             name=name,
@@ -113,7 +121,7 @@ def production_model(run_id: str,
             archive_existing_versions=True  # Optional: Archives previous versions in Production
         )
         logging.info(f"{name} model with version{best_version} has been set to production")
-        return name, best_version
+        return name, best_version, model
     else:
         logging.info("models failed to meet the threshold, initiate retrain")
         return tuple("No models meet the threshold criteria. kindly update parameters and retrian")

@@ -43,6 +43,9 @@ threshold:
   mAP50: 0.02
   mAP50_95: 0.02
 
+evaluation:
+  name: Drill
+
 # evaluation:
 #   path_of_model: artifacts/trained_model/Trainedv8.pt
 #   trainig_data: artifacts/data_ingestion/data

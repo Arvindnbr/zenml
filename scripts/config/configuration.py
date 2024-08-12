@@ -72,6 +72,12 @@ class ConfigurationManager:
         )
         return metrics
     
+    def get_evaluation(self)-> Evaluation:
+        eval = self.config.evaluation
+        eval = Evaluation(
+            name = eval.name
+        )
+        return eval
 
 
 

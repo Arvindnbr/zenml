@@ -22,5 +22,7 @@ mlflow
 onnxruntime
 zenml
 zenml[server]   
+torchmetrics
+torchmetrics[detection]
 
 -e . 

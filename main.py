@@ -12,6 +12,8 @@ if __name__ == "__main__":
                   x.get_datavalidation_config(),
                   x.get_train_log_config(),
                   x.get_params(),
-                  x.get_threshold()
+                  x.get_threshold(),
                   )
+
+    
 

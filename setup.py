@@ -8,7 +8,7 @@ with open("README.md", 'r', encoding="utf-8") as f:
 __version__ = "0.0.0"
 repo = "YOLO-zenml-ops"
 author = "IVA"
-Script = "zenML"
+Script = "zenops"
 
 setuptools.setup(
     name=Script,

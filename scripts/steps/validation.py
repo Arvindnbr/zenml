@@ -1,4 +1,4 @@
-from zenml import step
+from zenml import step, ArtifactConfig
 from zenml.logger import get_logger
 import os,sys
 from scripts.utils.log import logger
@@ -44,12 +44,13 @@ class DataValidation:
 
 
 @step(enable_cache=False)
-def validator(config:DataValidationConfig, dir:str)->Annotated[bool, "validation status"]:
+def validator(config:DataValidationConfig, dir:str)->Tuple[Annotated[bool, "validation status"],
+                                                           Annotated[str, ArtifactConfig(name="Dataset_path",is_model_artifact=True)]]:
     try:
         validator = DataValidation(config, dir)
         status = validator.validate_files(dir)
         validator.update_yaml(dir)
-        return status
+        return status, dir
     except Exception as e:
         raise AppException(e,sys)
 
