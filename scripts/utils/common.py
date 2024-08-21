@@ -10,6 +10,9 @@ from box.exceptions import BoxValueError
 from pathlib import Path
 from typing import Any
 import base64
+from ultralytics import YOLO
+from ultralytics.engine.trainer import BaseTrainer
+from ultralytics.utils import LOGGER
 
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
@@ -87,6 +90,8 @@ def get_highest_train_folder(parent_folder):
     # Return None if no matching folder contains the weights file
     return None
 
+#copy yaml file
+
 def get_random_file_from_folder(folder_path):
     files = [f for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))]
     if files:
@@ -95,6 +100,29 @@ def get_random_file_from_folder(folder_path):
     else:
         print(f"No files found in {folder_path}.")
         return None
+
+#yolo callback
+
+best_loss = float('inf')
+wait = 0
+patience = 10
+
+def early_stopping_callback(epoch, logs):
+            global best_loss, wait
+            val_loss = logs.get('val/loss') 
+            if val_loss is None:
+                print("Validation loss not found in logs.")
+                return
+            improvement = (best_loss - val_loss) / best_loss * 100
+            if improvement < 2:
+                wait += 1
+            else:
+                best_loss = val_loss
+                wait = 0
+            if wait >= patience:
+                print("No improvement, stopping early.")
+                model.stop_training = True
+            print(f"Epoch {epoch + 1}: Improvement {improvement:.2f}%, Best Loss {best_loss:.4f}")
 
 # def indices(base_set: list, new_set: list):
 #     base_set = [item.lower() for item in base_set]

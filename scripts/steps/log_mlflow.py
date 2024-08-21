@@ -1,6 +1,7 @@
 "Registers model in MLFlow"
 import os
 from pathlib import Path
+from ultralytics import YOLO
 import csv
 import logging
 import yaml

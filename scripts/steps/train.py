@@ -12,10 +12,20 @@ from scripts.utils.common import get_highest_train_folder
 from typing import Annotated, Any, Dict, Tuple
 from ultralytics import YOLO
 from zenml import ArtifactConfig, step, log_artifact_metadata
-
+from scripts.utils.common import early_stopping_callback
 
 
 logger = get_logger(__name__)
+
+
+# from ultralytics import YOLO
+# from ultralytics.engine.trainer import BaseTrainer
+# from ultralytics.utils import LOGGER
+
+# best_loss = float('inf')
+# wait = 0
+# patience = 5
+
 
 
 class ModelTrainer:
@@ -62,6 +72,7 @@ class ModelTrainer:
             logging.info(data_path)
 
         model = yolo_model
+
         # Load a pretrained YOLOv8n model
         # model = YOLO(model)
         # Train the model
@@ -74,19 +85,23 @@ class ModelTrainer:
                 epochs = self.param.epochs,
                 resume = self.param.resume,
                 seed = self.param.seed,
-                imgsz = self.param.imgsz
-                )
+                imgsz = self.param.imgsz,
+                patience = 10)
         # evaluate model performance on the validation set
     
         return trained
+
+
         
 
 
-@step(enable_cache=True, enable_step_logs=False)
+@step(enable_cache=False, enable_step_logs=False)
 def load_model(model_checkpoint: str,
                ) -> Annotated[YOLO, ArtifactConfig(name="Raw_YOLO", is_model_artifact=True)]:
     logger.info(f"Loading YOLO checkpoint {model_checkpoint}")
-    return YOLO(model_checkpoint)    
+    YOLOModel = YOLO(model_checkpoint)
+    YOLOModel.add_callback('on_val_epoch_end', early_stopping_callback)
+    return YOLOModel   
 
 @step(output_materializers={"Trained_YOLO": UltralyticsMaterializer},
       enable_cache=False,

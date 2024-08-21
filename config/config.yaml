@@ -1,23 +1,24 @@
-artifacts_root: MLartifacts
+artifacts_root: Data
 
 data_ingestion:
-  root_dir: MLartifacts/data_ingestion
+  root_dir: Data/data_ingestion
   source_url: https://universe.roboflow.com/ds/xVFScOg5j2?key=93Tq5paN8Z
-  local_data: MLartifacts/data_ingestion/data.zip
-  unzip_dir: MLartifacts/data_ingestion/data
+  local_data: Data/data_ingestion/data.zip
+  unzip_dir: Data/data_ingestion/Base_data
 
+# face dset - https://universe.roboflow.com/ds/bs9gtF70wF?key=IXirQnvG0W
 # timy-dset "https://universe.roboflow.com/ds/xVFScOg5j2?key=93Tq5paN8Z"
 # E waste dataset "https://universe.roboflow.com/ds/i02h52wl6q?key=ZM0MEFLZ5R"
 # COCO data     "https://public.roboflow.com/ds/fYqIOuhVKK?key=sAOM4f2h70"
 
 #new custom dataset
 custom_dataset:
-  classes: ['Drill','Survivor']
-  new_data_path: MLartifacts/data_ingestion
+  classes: []
+  new_data_path: Data/data_ingestion
   dataset_name: version1
 
 data_validation:         
-  data_val_dir: MLartifacts/data_validation
+  data_val_dir: Data/data_validation
   data_val_req: 
     - train
     - valid
@@ -31,7 +32,7 @@ train_log_config:
 
 param:
   optimizer: auto # other choices=['auto', 'SGD', 'Adam', 'AdamW', 'RMSProp']
-  lr0: 0.03      # learning rate 
+  lr0: 0.02     
   save_period: -1
   batch: 50
   epochs: 1
@@ -40,8 +41,8 @@ param:
   imgsz: 640
 
 threshold:
-  mAP50: 0.02
-  mAP50_95: 0.02
+  mAP50: 0.92   #0.02
+  mAP50_95: 0.82
 
 evaluation:
   name: Drill

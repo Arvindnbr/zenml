@@ -180,7 +180,7 @@ class DataSetSorter:
 
         return str(new_dir)
     
-@step(enable_cache=False)
+@step(enable_cache=True)
 def data_sort(config: DataSetConfig, base_data:str) -> Annotated[str, "Sorted Data"]:
     try:
         datasubsetter = DataSetSorter(config)

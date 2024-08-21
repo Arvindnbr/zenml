@@ -1,17 +1,18 @@
 from zenml.logger import get_logger
 import mlflow, os
 from typing import Annotated, Any, Dict, Tuple
-from zenml import step, log_artifact_metadata, ArtifactConfig
+from zenml import step, log_artifact_metadata, ArtifactConfig, save_artifact
 from ultralytics import YOLO
 from scripts.entity.entity import Evaluation
 from zenml.metadata.metadata_types import StorageSize, DType
+from scripts.config.configuration import ConfigurationManager
 from pathlib import Path
 
 
 logger = get_logger(__name__)
 
 
-@step
+@step(enable_cache=False)
 def yolov8_prediction(model_path: str,
                       image_source: str,
                       dir: str):
@@ -35,6 +36,7 @@ def yolov8_prediction(model_path: str,
             "classes": r.boxes.cls.cpu().numpy().tolist(),  # class indices
             }
         predictions.append(prediction_details)
+        #x = r.show()
         # log_artifact_metadata(artifact_name=f"predicted_{r.path}",
         #                       metadata={
         #                           "image_path": DType(r.path),
@@ -47,14 +49,12 @@ def yolov8_prediction(model_path: str,
 
 
 
-@step
-def yolov8_validation_step(
-    model_path: str,
-    dataset_config: str,
-    threshold: float,
-    validation_name:str
-) -> Tuple[Annotated[bool, "retrain status"],
-           Annotated[Dict[str, Any], ArtifactConfig(name="infered_metrics",is_model_artifact=True)]]:
+@step(enable_cache=False)
+def yolov8_validation_step(model_path: str,
+                           dataset_config: str,
+                           threshold: float,
+                           validation_name:str) -> Annotated[str, "Retrain_trigger"]:
+           #Annotated[Dict[str, Any], ArtifactConfig(name="infered_metrics",is_model_artifact=True)]]:
     """Validates the YOLOv8 model and checks if retraining is needed.
 
     Args:
@@ -81,13 +81,27 @@ def yolov8_validation_step(
                               "recall": DType(metrics.box.mr),
                               })
     
-    # Compare metrics (e.g., mAP50) with the threshold
+    x = ConfigurationManager()
+    trigger_dir = x.get_datavalidation_config()
+    os.makedirs(os.path.join(trigger_dir.root_dir,"Trigger_retrain"), exist_ok=True)
+    # Compare metrics with the threshold
     if metrics.box.map50 < threshold:
+        print(f"model mAP50 {metrics.box.map50} < Threshold value")
         print("Model performance below threshold. Retraining needed.")
-        return True, metrics.results_dict
+        status = "True"
+        with open(os.path.join(trigger_dir.root_dir,"Trigger_retrain","trigger.txt"), 'w') as file:
+            file.write(status)
     else:
+        print(f"model mAP50 {metrics.box.map50}>= Threshold value")
         print("Model performance is satisfactory.")
-        return False, metrics.results_dict
+        status = "False"
+        with open(os.path.join(trigger_dir.root_dir,"Trigger_retrain","trigger.txt"), 'w') as file:
+            file.write(status)
+    
+    return status
+    
+
+
 
 
 
