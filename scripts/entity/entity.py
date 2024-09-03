@@ -5,20 +5,15 @@ from pathlib import Path
 @dataclass(frozen=True)
 class DataIngestionConfig:
     root_dir: Path
-    source_URL: str
-    local_data: Path
+    data_source: str
     unzip_dir: Path
+    classes: list
 
 @dataclass(frozen=True)
 class DataSetConfig:
     classes: list
     new_data_path: Path
     dataset_name: str
-
-@dataclass(frozen=True)
-class DataValidationConfig:
-    root_dir: Path
-    req_files: list
 
 @dataclass(frozen=True)
 class TrainLogConfig:

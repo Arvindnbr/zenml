@@ -15,9 +15,9 @@ class ConfigurationManager:
         create_directories([config.root_dir])
         data_ingestion_config = DataIngestionConfig(
             root_dir = config.root_dir,
-            source_URL= config.source_URL,
-            local_data= config.local_data,
-            unzip_dir= config.unzip_dir
+            data_source= config.data_source,
+            unzip_dir= config.unzip_dir,
+            classes = config.classes
             )
         return data_ingestion_config
     
@@ -31,14 +31,6 @@ class ConfigurationManager:
         )
         return dataset_config
     
-    def get_datavalidation_config(self)->DataValidationConfig:
-        config = self.config.data_validation
-        create_directories([config.data_val_dir])
-        data_validation_config = DataValidationConfig(
-            root_dir=config.data_val_dir,
-            req_files= config.data_val_req
-            )
-        return data_validation_config
     
     def get_train_log_config(self)-> TrainLogConfig:
         config = self.config.train_log_config

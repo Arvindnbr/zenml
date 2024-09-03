@@ -2,9 +2,9 @@ artifacts_root: Data
 
 data_ingestion:
   root_dir: Data/data_ingestion
-  source_url: https://universe.roboflow.com/ds/xVFScOg5j2?key=93Tq5paN8Z
-  local_data: Data/data_ingestion/data.zip
+  data_source: Data/data_ingestion/version1_v6  #https://universe.roboflow.com/ds/xVFScOg5j2?key=93Tq5paN8Z
   unzip_dir: Data/data_ingestion/Base_data
+  classes: ['Drill']
 
 # face dset - https://universe.roboflow.com/ds/bs9gtF70wF?key=IXirQnvG0W
 # timy-dset "https://universe.roboflow.com/ds/xVFScOg5j2?key=93Tq5paN8Z"
@@ -16,13 +16,6 @@ custom_dataset:
   classes: []
   new_data_path: Data/data_ingestion
   dataset_name: version1
-
-data_validation:         
-  data_val_dir: Data/data_validation
-  data_val_req: 
-    - train
-    - valid
-    - data.yaml
 
 train_log_config:  
   model: yolov8n.pt # choices="yolov8n","yolov8s","yolov8m","yolov8l","yolov8x"

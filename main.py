@@ -9,7 +9,6 @@ if __name__ == "__main__":
     x = ConfigurationManager()
     data_pipeline(x.get_dataingestion_config(),
                   x.get_Dataset_config(),
-                  x.get_datavalidation_config(),
                   x.get_train_log_config(),
                   x.get_params(),
                   x.get_threshold(),

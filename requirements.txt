@@ -1,4 +1,4 @@
-numpy
+numpy==1.26.4
 matplotlib
 opencv-python
 pillow
@@ -14,10 +14,7 @@ ultralytics-thop
 ultralytics
 ensure==1.0.2
 python-box==6.0.2
-dvc
 joblib
-Flask
-Flask-Cors
 mlflow
 onnxruntime
 zenml

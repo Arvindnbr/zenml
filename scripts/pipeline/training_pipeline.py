@@ -7,7 +7,7 @@ from scripts.steps.validation import validator
 from scripts.steps.train import Trainer, load_model
 from scripts.steps.log_mlflow import register_model
 from scripts.config.configuration import ConfigurationManager
-from scripts.entity.entity import DataIngestionConfig, DataSetConfig, DataValidationConfig, TrainLogConfig, Params, TresholdMetrics
+from scripts.entity.entity import DataIngestionConfig, DataSetConfig, TrainLogConfig, Params, TresholdMetrics
 from scripts.steps.best_model import production_model
 from typing import Annotated, Any, Dict, Tuple
 import logging
@@ -19,7 +19,6 @@ from zenml import ArtifactConfig, step, log_artifact_metadata
 @pipeline
 def data_pipeline(config: DataIngestionConfig, 
                   dset_config: DataSetConfig, 
-                  val_config: DataValidationConfig,
                   trainlog_config: TrainLogConfig, 
                   parameters: Params,
                   threshold: TresholdMetrics
@@ -37,11 +36,11 @@ def data_pipeline(config: DataIngestionConfig,
         print(current_dset)
     
     dset = current_dset
-    status, dir = validator(val_config,dset)
+    status, dir = validator(config,dset)
     logging.info(f"status:{status} and current_dset: {dset}")
     yolo_model = load_model(trainlog_config.model)
     yolo_model, metrics, names, save_dir = Trainer(config=trainlog_config,
-                                                   val_config=val_config,
+                                                   val_config=config,
                                                    params=parameters,
                                                    validation_status=status,
                                                    current_dset=current_dset,

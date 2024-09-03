@@ -29,13 +29,13 @@ logger = get_logger(__name__)
 
 
 class ModelTrainer:
-    def __init__(self, config: TrainLogConfig,val: DataValidationConfig,param: Params):
+    def __init__(self, config: TrainLogConfig, val: DataIngestionConfig, param: Params):
         self.config = config
         self.param = param
         self.val = val
 
     def validation_status(self, status):
-        status_file = f"{self.val.root_dir}/status.txt"
+        status_file = f"{self.val.root_dir}/data_validation/status.txt"
         with open(status_file, 'r') as file:
             status = file.read().strip()
         key, value = status.split(':')
@@ -106,7 +106,7 @@ def load_model(model_checkpoint: str,
 @step(output_materializers={"Trained_YOLO": UltralyticsMaterializer},
       enable_cache=False,
       )
-def Trainer(config:TrainLogConfig,val_config: DataValidationConfig,
+def Trainer(config:TrainLogConfig,val_config: DataIngestionConfig,
             params:Params,validation_status: bool,current_dset: str,
             yolo_model: YOLO) -> Tuple[Annotated[YOLO, ArtifactConfig(name="Trained_YOLO", is_model_artifact=True)],
                                        Annotated[Dict[str, Any], "validation_metrics"],
