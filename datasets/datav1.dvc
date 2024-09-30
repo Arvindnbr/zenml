@@ -1,0 +1,6 @@
+outs:
+- md5: 828f8ac3cd8dadb593a7ec124c586104.dir
+  size: 92930158
+  nfiles: 204
+  hash: md5
+  path: datav1
