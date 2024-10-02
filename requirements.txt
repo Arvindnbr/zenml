@@ -1,7 +1,5 @@
 numpy==1.26.4
-matplotlib
 opencv-python
-pillow
 pyyaml
 requests
 scipy
@@ -9,7 +7,6 @@ torch
 torchvision
 tqdm
 pandas
-seaborn
 ultralytics-thop
 ultralytics
 ensure==1.0.2
@@ -21,5 +18,5 @@ zenml
 zenml[server]   
 torchmetrics
 torchmetrics[detection]
-
+dvc
 -e . 

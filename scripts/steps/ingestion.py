@@ -87,7 +87,7 @@ class DataIngestion:
 
 
 
-@step(enable_cache=False)
+@step(enable_cache=True)
 def data_ingest(config:DataIngestionConfig) -> Annotated[str, "Base_dataset"]:
     try:
         ingestion = DataIngestion(config)

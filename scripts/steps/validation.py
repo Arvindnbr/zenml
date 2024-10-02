@@ -8,6 +8,7 @@ from scripts.config.configuration import DataIngestionConfig
 from typing import Annotated, Any, Dict, Tuple
 from zenml.client import Client
 from zenml import save_artifact
+from pathlib import Path
 
 logger = get_logger(__name__)
 
@@ -91,14 +92,14 @@ class DataValidation:
     
 
 
-@step(enable_cache=False)
+@step(enable_cache=True)
 def validator(config:DataIngestionConfig, dir:str)->Tuple[Annotated[bool, "validation status"],
                                                            Annotated[str, ArtifactConfig(name="Dataset_path",is_model_artifact=True)]]:
     try:
         validator = DataValidation(config, dir)
         status = validator.validate_files(dir)
         validator.update_yaml(dir)
-        save_artifact(dir, name = "current_dataset_path")
+        save_artifact(dir, name = f"current_dataset_path : {dir}")
         return status, dir
     except Exception as e:
         raise AppException(e,sys)

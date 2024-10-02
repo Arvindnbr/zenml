@@ -1,9 +1,7 @@
 import os, re, random
 import yaml
-import shutil
 from scripts.utils.log import logger
 import json
-import joblib
 from ensure import ensure_annotations
 from box import ConfigBox
 from box.exceptions import BoxValueError
@@ -133,4 +131,18 @@ def early_stopping_callback(epoch, logs):
 #         new_indices.extend(indices)
 #     return new_indices
 
+def get_images(directory):
+    """
+    Returns a list of tuples containing the image file names and their full paths
+    from the specified directory. It includes both .png and .jpg files.
+    
+    :param directory: Path to the directory where images are located
+    :return: List of tuples (image_name, full_path)
+    """
+    path = Path(directory)
+    image_files = list(path.glob('**/*.[pj][pn]g'))  
+    
+    images_list = [(image_file.name, str(image_file)) for image_file in image_files]
+    
+    return images_list
 

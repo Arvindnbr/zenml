@@ -1,10 +1,10 @@
-artifacts_root: Data
+artifacts_root: /home/arvind/Python/DL/zenml/artifacts
 
 data_ingestion:
-  root_dir: Data/data_ingestion
-  data_source: Data/data_ingestion/version1_v6  #https://universe.roboflow.com/ds/xVFScOg5j2?key=93Tq5paN8Z
-  unzip_dir: Data/data_ingestion/Base_data
-  classes: ['Drill']
+  root_dir: /home/arvind/Python/DL/datasets/datav1
+  data_source: /home/arvind/Python/DL/zenml/datasets/data3  #https://universe.roboflow.com/ds/xVFScOg5j2?key=93Tq5paN8Z
+  unzip_dir: /home/arvind/Python/DL/datasets/datav1
+  classes: ['employee','security','cleaning staff']
 
 # face dset - https://universe.roboflow.com/ds/bs9gtF70wF?key=IXirQnvG0W
 # timy-dset "https://universe.roboflow.com/ds/xVFScOg5j2?key=93Tq5paN8Z"
@@ -20,25 +20,25 @@ custom_dataset:
 train_log_config:  
   model: yolov8n.pt # choices="yolov8n","yolov8s","yolov8m","yolov8l","yolov8x"
   mlflow_uri: http://127.0.0.1:5000
-  experiment_name: trail_exp
-  model_name: miniv8
+  experiment_name: demov8
+  model_name: demov8
 
 param:
   optimizer: auto # other choices=['auto', 'SGD', 'Adam', 'AdamW', 'RMSProp']
   lr0: 0.02     
   save_period: -1
   batch: 50
-  epochs: 1
+  epochs: 2
   resume: False
   seed: 0
   imgsz: 640
 
 threshold:
-  mAP50: 0.92   #0.02
-  mAP50_95: 0.82
+  mAP50: 0.02   #0.02
+  mAP50_95: 0.01
 
 evaluation:
-  name: Drill
+  name: demov8
 
 # evaluation:
 #   path_of_model: artifacts/trained_model/Trainedv8.pt
