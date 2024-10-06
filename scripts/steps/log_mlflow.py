@@ -2,20 +2,14 @@
 from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
-import os
-from ultralytics import YOLO
-import csv
 import logging
 import yaml
-#import cloudpickle
 import pandas as pd
 import mlflow
 from zenml import step
 from zenml.logger import get_logger
-from scripts.utils import wrapper
 from scripts.utils.wrapper import YoloWrapper
-from typing import Annotated, Any, Dict, Tuple
-from scripts.utils.common import get_images
+from typing import Annotated, Tuple
 
 
 logger = get_logger(__name__)
@@ -59,33 +53,9 @@ def log_metrics(save_dir: str, log_results: bool = True):
     """
     save_dir = Path(save_dir)
     try:
-        # with open(save_dir / "results.csv", "r") as csv_file:
-        #     metrics_reader = csv.DictReader(csv_file)
-        #     metrics_list = []
-        #     for metrics in metrics_reader:
-        #         # Create an empty dictionary to store the updated key-value pairs for this row
-        #         updated_metrics = {}
-        #         # Iterate through the key-value pairs in this row's dictionary
-        #         for key, value in metrics.items():
-        #             # Remove whitespace from the key
-        #             key = key.strip()
-        #             value = value.strip()
-        #             # Remove extra strings in keys
-        #             patterns = ["(B)", "metrics/"]
-        #             for pattern in patterns:
-        #                 key = key.replace(pattern, "")
-        #             # Add the updated key-value pair to the updated row dictionary
-        #             try:
-        #                 # Add the updated key-value pair to the updated row dictionary
-        #                 updated_metrics[key] = float(value)
-        #             except ValueError:
-        #                 logging.error(f"ValueError: Could not convert {value} to float.")
-        #             metrics_list.append(updated_metrics)
-        #             if log_results:
-        #                 mlflow.log_metrics(updated_metrics)
+
         columns_to_plot = ['train_box_loss', 'train_cls_loss', 'train_dfl_loss','metrics_precision(B)', 'metrics_recall(B)', 
                            'val_box_loss', 'val_cls_loss', 'val_dfl_loss', 'metrics_mAP50(B)', 'metrics_mAP50-95(B)']
-        
         
         
         df = pd.read_csv(f"{save_dir}/results.csv", skipinitialspace=True)
@@ -108,9 +78,8 @@ def log_metrics(save_dir: str, log_results: bool = True):
             mlflow.log_metric('lr_pg1', row['lr_pg1'], step=epoch)
             mlflow.log_metric('lr_pg2', row['lr_pg2'], step=epoch)
 
-                # Add more metrics as necessary
             mlflow.log_artifact(f"{save_dir}/results.csv")
-             #plots and saves the figure to mlflow             
+            
         for column in columns_to_plot:
             figs = plt.figure(figsize=(10, 6))
             plt.plot(df['epoch'], df[column], marker='o', linestyle='-', color='b')
@@ -150,17 +119,16 @@ def register_model(experiment_name: str, model_name: str, save_dir: str
     model = YoloWrapper()
 
     exp_id = get_experiment_id(experiment_name)
-    
-    #cloudpickle.register_pickle_by_value(wrapper)
 
     with mlflow.start_run(experiment_id=exp_id) as run:
-        # Log some params
+
         with open(save_dir / "args.yaml", "r") as param_file:
             params = yaml.safe_load(param_file)
         mlflow.log_params(params)
 
         log_metrics(save_dir, True)
         mlflow.log_artifact(f"{save_dir}/weights/best.pt")
+        mlflow.log_artifact(f"{save_dir}/args.yaml")
         pip_reqs = read_lines("requirements.txt")
         mlflow.pyfunc.log_model(
             "model",

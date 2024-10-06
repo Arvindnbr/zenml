@@ -1,63 +1,58 @@
 from scripts.entity.exception import AppException
-import sys, os
+import sys, os, yaml
+from mlflow import MlflowClient
 from zenml.logger import get_logger
-from zenml import pipeline, log_artifact_metadata, ArtifactConfig
+from zenml import pipeline
 from ultralytics import YOLO
 from zenml.client import Client
-from scripts.steps.inference import yolov8_prediction, yolov8_validation_step
+from scripts.steps.inference import yolov8_validation_step
 from scripts.steps.train import load_model, Trainer
 from scripts.steps.log_mlflow import register_model
 from scripts.steps.best_model import production_model
 from scripts.config.configuration import ConfigurationManager
 from scripts.steps.retraining import Retrain_dataset, retrain
-from zenml import load_artifact
-from typing import Annotated, Any, Dict, Tuple
-from zenml.materializers.built_in_materializer import BuiltInMaterializer
+from typing import Annotated
 
 
 
 logger = get_logger(__name__)
 
-dataset = Client().get_artifact_version("Dataset_path")
-#val_status_artifact = Client().get_artifact_version("Retrain_trigger")
-#model = Client().get_artifact_version("Production_YOLO")
-
-#get dataset artifact
-materializer_class = BuiltInMaterializer
-dataset_materializer = materializer_class(dataset.uri)
-loaded_data = dataset_materializer.load(str)
-#status_materializer = materializer_class(val_status_artifact.uri)
-
 config = ConfigurationManager()
 threshold = config.get_threshold()
-name = config.get_evaluation()
+eval = config.get_evaluation()
 params = config.get_params()
 train_config = config.get_train_log_config()
-val = config.get_datavalidation_config()
+client = MlflowClient(tracking_uri=train_config.mlflow_uri)
 
 @pipeline
-def inference() -> Annotated[str,"trigger status"]:
-        
-    Dataset = f"{loaded_data}/data.yaml"
-    #get model artifact
-    model = Client().get_artifact_version("Production_YOLO")
-    val_status = yolov8_validation_step(model_path=model,
-                                        dataset_config = Dataset,
+def inference() -> Annotated[str,"dataset_root"]:
+
+    model_versions = client.search_model_versions(f"name = '{eval.name}'")
+
+    production_run_id = None
+    for version in model_versions:
+        if version.current_stage == "Production":
+            production_run_id = version.run_id
+            break
+
+    run_info = client.get_run(production_run_id)
+    artifact_uri = run_info.info.artifact_uri.replace("mlflow-artifacts:", "mlartifacts")
+    model = f"{artifact_uri}/model/artifacts/best.pt"
+    with open(f"{artifact_uri}/args.yaml", 'r') as f:
+        args = yaml.safe_load(f)
+    dataset_root = os.path.split(args.get('data'))[0]
+    val_status, metric = yolov8_validation_step(model_path=model,
                                         threshold=threshold.mAP50,
-                                        validation_name = name.name
+                                        validation_name = eval.name
                                         )
-    return val_status
     
-@pipeline
-def Trigger_retrain()-> Annotated[str, ArtifactConfig(name="Retrained_YOLO_model", is_model_artifact=True)]:
-    with open(os.path.join(val.root_dir,"Trigger_retrain","trigger.txt"), 'r') as file:
+    with open(os.path.join(dataset_root,"data_validation","trigger.txt"), 'r') as file:
         trigger = file.readline()
     
     if trigger == "False":
-        print("Model is healthy!! continue with prediction")
-        return model
+        logger.info("Model is healthy!! continue with prediction")
     elif trigger == "True":
-        new_dataset = Retrain_dataset(loaded_data)
+        new_dataset = Retrain_dataset(dataset_root)
         yolo_model = load_model(train_config.model)
         model, results, names, save_dir = retrain(config=params,
                                                     dataset=new_dataset,
@@ -68,8 +63,8 @@ def Trigger_retrain()-> Annotated[str, ArtifactConfig(name="Retrained_YOLO_model
                                                     model_name = train_config.model_name,
                                                     save_dir = save_dir
                                                     )
-        #name, version, model = production_model(run_id, threshold)
-        return model
+        name, version, model = production_model(run_id, threshold)
+
     
      
 
@@ -79,6 +74,5 @@ def Trigger_retrain()-> Annotated[str, ArtifactConfig(name="Retrained_YOLO_model
 if __name__ == "__main__":
     try:
         inference()
-        Trigger_retrain()
     except Exception as e:
         raise AppException(e, sys)

@@ -1,7 +1,6 @@
-import os
 from scripts.pipeline.training_pipeline import data_pipeline
 from scripts.config.configuration import ConfigurationManager
-import mlflow, subprocess, time
+import mlflow
 
 mlflow.set_tracking_uri("http://127.0.0.1:5000")
 

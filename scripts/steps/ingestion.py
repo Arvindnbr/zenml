@@ -1,4 +1,3 @@
-# data_ingestion_step.py
 import sys, zipfile, os, shutil, yaml
 from urllib import request
 from zenml import step
@@ -7,9 +6,12 @@ from scripts.entity.exception import AppException
 from scripts.utils.log import logger
 from scripts.config.configuration import DataIngestionConfig
 from zenml.logger import get_logger
-from typing import Annotated, Any, Dict, Tuple
+from typing import Annotated
+from scripts.utils.common import find_image_file
+
 
 logger = get_logger(__name__)
+
 
 
 class DataIngestion:
@@ -39,9 +41,18 @@ class DataIngestion:
             os.makedirs(os.path.join(output_folder, split, "labels"), exist_ok=True)
         for split, file in splits.items():
             for filename in file:
-                shutil.copy(os.path.join(images_folder,f"{filename}.jpg"), os.path.join(output_folder,split,'images',f"{filename}.jpg"))
-                shutil.copy(os.path.join(labels_folder,f"{filename}.txt"), os.path.join(output_folder,split,'labels',f"{filename}.txt"))
-        print(f'Data ingested from {self.config.data_source} to {output_folder}')
+                label_path = os.path.join(labels_folder,f"{filename}.txt")
+                if os.path.exists(label_path):
+                    image_path = find_image_file(images_folder,filename)
+                    if image_path:
+                        shutil.copy(image_path,os.path.join(output_folder,split,'images'))
+                        shutil.copy(label_path,os.path.join(output_folder,split,'labels'))
+                    else:
+                        logger.info(f"Image for '{filename}' not found. Skipping.")
+                else:
+                    logger.info(f"Label file '{filename}.txt' not found. Skipping.")
+                
+        logger.info(f'Data ingested from {self.config.data_source} to {output_folder}')
         yaml_file = os.path.join(output_folder,"data.yaml")
         yaml_content = {
             'path': f"{output_folder}",
@@ -53,7 +64,7 @@ class DataIngestion:
         }
         with open (yaml_file, 'w') as file:
             yaml.dump(yaml_content, file)
-        print(f"Dataset created with splits \ntrain: {output_folder}/train \nvalid: {output_folder}/valid \ntest: {output_folder}/test \ncorresponding {yaml_file} created")
+        logger.info(f"Dataset created with splits \ntrain: {output_folder}/train \nvalid: {output_folder}/valid \ntest: {output_folder}/test \ncorresponding {yaml_file} created")
         return str(output_folder)
     
 
@@ -87,12 +98,19 @@ class DataIngestion:
 
 
 
-@step(enable_cache=True)
+@step(enable_cache=False)
 def data_ingest(config:DataIngestionConfig) -> Annotated[str, "Base_dataset"]:
     try:
         ingestion = DataIngestion(config)
         if os.path.exists(config.data_source):
-            return ingestion.local_data()
+            directry = str(config.unzip_dir)
+            files = [f"{directry}/{split}/{t}" for split in ["train", "valid", "test"] for t in ["images", "labels"]] + [f"{directry}/data.yaml"] + [directry]
+            if not any(os.path.exists(path) for path in files):
+                return ingestion.local_data()
+            else:
+                logger.info(f"Dataset pre exist in the specified {config.unzip_dir}\nskipping data ingestion")
+                print(f"Dataset pre exist in the specified {config.unzip_dir}\nskipping data ingestion")
+                return directry
         else:
             ingestion.download_data()
             return ingestion.extract_zipfile()

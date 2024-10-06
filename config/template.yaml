@@ -1,0 +1,76 @@
+#the root folder where the whole artifacts are kept
+artifacts_root: /home/arvind/Python/artifacts
+
+data_ingestion:
+  #the root directory for the dataset
+  root_dir: /home/arvind/Python/datasets/
+  #data is ingested from the following. it can be either path or a url
+  data_source: /home/arvind/Downloads/
+  # the directory where the data is ingested to. usually inside the root dir  
+  unzip_dir: /home/arvind/Python/datasets/datav1
+  # list of classes in the dataset.
+  classes: ['employee','security','cleaning staff']
+
+#new custom dataset - Optional - if you want to subset out of the root dataset
+custom_dataset:
+  # the classes to include in the subset. step is ignored if left blank.
+  classes: []
+  # new path where subset should be ingested
+  new_data_path: /home/arvind/Python/datasets/
+  # specify the name of the dataset
+  dataset_name: version1
+
+#training configuration
+train_log_config:  
+  # specify the model to train. can use both scratch and pretrained models. choices= yolov8n, yolov8s, yolov8m etc.
+  model: yolov8n.pt 
+  # specify the mlflow server url
+  mlflow_uri: http://127.0.0.1:5000
+  # set the experiment name under which the training should be logged
+  experiment_name: demov8
+  # set the name for the model
+  model_name: dem
+
+#training parameters
+param:
+  #specify the optimizer - other choices=['auto', 'SGD', 'Adam', 'AdamW', 'RMSProp']
+  optimizer: auto 
+  # initial learning rate
+  lr0: 0.03    
+  # saving period of weights 
+  save_period: -1
+  # batch size of training
+  batch: 10
+  # number of epochs to train on
+  epochs: 3
+  # weather you are resuming training or not. default : False
+  resume: False
+  # set the seed for reproducibility
+  seed: 0
+  #specify the image size for training
+  imgsz: 640
+  # to be added
+  cfg: /home/arvind/Python/DL/zenml/config/cfg.yaml
+
+#threshold parameters to validate the model
+threshold:
+  #map50 value. if you are running for the first time set the value as minimal as possible
+  mAP50: 0.02   #0.02
+  mAP50_95: 0.01
+
+#evaluation configs. once you have made a production model.
+evaluation:
+  #name of the model to predict or infer/validate
+  name: dem
+  #version of the model to test to . if kept null production model will be used
+  version: 
+  # the data source upon which the model should predict
+  data_source: /home/arvind/Python/datasets/datav1/test/images
+  # directory to save the results
+  save_dir: /home/arvind/Python/datasets/datav1/test/images
+
+#sample datasets available online
+# face dset       "https://universe.roboflow.com/ds/bs9gtF70wF?key=IXirQnvG0W"
+# timy-dset       "https://universe.roboflow.com/ds/xVFScOg5j2?key=93Tq5paN8Z"
+# E waste dataset "https://universe.roboflow.com/ds/i02h52wl6q?key=ZM0MEFLZ5R"
+# COCO data       "https://public.roboflow.com/ds/fYqIOuhVKK?key=sAOM4f2h70"

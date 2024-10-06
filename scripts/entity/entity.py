@@ -21,6 +21,7 @@ class TrainLogConfig:
     mlflow_uri: str
     experiment_name: str
     model_name: str
+    runs_root: str
 
 @dataclass(frozen=True)
 class Params:
@@ -41,3 +42,6 @@ class TresholdMetrics:
 @dataclass(frozen=True)
 class Evaluation:
     name: str
+    version: int
+    data_source: str
+    save_dir: str

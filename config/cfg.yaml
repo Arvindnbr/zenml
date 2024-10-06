@@ -1,0 +1,14 @@
+augmentations:
+  hsv_h: 0.015  # hue
+  hsv_s: 0.7   # saturation
+  hsv_v: 0.4   # value
+  degrees: 0.0 # rotation
+  translate: 0.1 # translation
+  scale: 0.5   # scaling
+  shear: 0.0   # shearing
+  perspective: 0.0 # perspective distortion
+  flipud: 0.0  # flip up and down
+  fliplr: 0.5  # flip left and right
+  mosaic: 1.0  # mosaic
+  mixup: 0.0   # mixup
+  copy_paste: 0.0 # copy-paste for segmentation

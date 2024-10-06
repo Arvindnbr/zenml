@@ -1,6 +1,6 @@
 import os, sys
 import logging
-import torch, yaml
+import torch
 from scripts.entity.exception import AppException
 from scripts.config.configuration import *
 from ultralytics import YOLO, settings
@@ -8,7 +8,7 @@ from zenml import step
 from zenml.logger import get_logger
 from zenml.types import CSVString
 from scripts.materializer.yolo_materializer import UltralyticsMaterializer
-from scripts.utils.common import get_highest_train_folder
+from scripts.utils.common import start_tensorboard
 import pandas as pd
 from typing import Annotated, Any, Dict, Tuple
 from ultralytics import YOLO
@@ -19,13 +19,6 @@ from scripts.utils.common import early_stopping_callback
 logger = get_logger(__name__)
 
 
-# from ultralytics import YOLO
-# from ultralytics.engine.trainer import BaseTrainer
-# from ultralytics.utils import LOGGER
-
-# best_loss = float('inf')
-# wait = 0
-# patience = 5
 
 
 
@@ -59,7 +52,8 @@ class ModelTrainer:
 
         settings.update({'mlflow': True})
         settings.reset()
-
+        project_dir = f"{self.config.runs_root}/{self.config.experiment_name}"
+        
         dataset_dir = current_dset
         data_path = os.path.join( dataset_dir, "data.yaml")
         logging.info(f"Dataset location: {data_path}")
@@ -71,12 +65,12 @@ class ModelTrainer:
             device = "cpu"
             logging.info(f"Device to run on: {device}")
             logging.info(data_path)
+            logging.info(f"saving runs to {project_dir}/{self.config.model_name}. ---------- Logging into tensorboard")
 
         model = yolo_model
-
-        # Load a pretrained YOLOv8n model
-        # model = YOLO(model)
-        # Train the model
+        project_root = f"{project_dir}/{self.config.model_name}"
+        start_tensorboard(logdir=project_root,
+                          port=6010)
         trained = model.train(
                 data=data_path,
                 optimizer = self.param.optimizer,
@@ -87,8 +81,10 @@ class ModelTrainer:
                 resume = self.param.resume,
                 seed = self.param.seed,
                 imgsz = self.param.imgsz,
-                patience = 10)
-        # evaluate model performance on the validation set
+                project = project_dir,
+                name = self.config.model_name,
+                patience = 10,
+                exist_ok = True)
     
         return trained
     
@@ -100,6 +96,10 @@ class ModelTrainer:
 
         data_path = model.ckpt['train_args']['data']
         logging.info(f"Dataset location: {data_path}")
+
+        project_root = model.ckpt["train_args"]["save_dir"]
+        start_tensorboard(logdir=project_root,
+                          port=6010)
 
         if os.path.exists(data_path):
 
@@ -155,8 +155,6 @@ def Trainer(config:TrainLogConfig,val_config: DataIngestionConfig,
         trainer = ModelTrainer(config,val_config,params)
         trainer.validation_status(validation_status)
         trained = trainer.train_model(current_dset, yolo_model)
-        # train_folder = get_highest_train_folder("runs/detect")
-        # save_dir = f"runs/detect/{train_folder}"
 
         save_dir = str(trained.save_dir)
         log_artifact_metadata(artifact_name="Trained_YOLO",metadata={"metrics": trained.results_dict, "names": yolo_model.names, "Save directory": save_dir},)

@@ -1,19 +1,16 @@
-from zenml import pipeline
 import os
-from scripts.entity.exception import AppException
-from scripts.steps.ingestion import data_ingest
+import logging
+from zenml import pipeline
+from zenml import ArtifactConfig
+from typing import Annotated, Tuple
 from scripts.steps.sorting import data_sort
 from scripts.steps.validation import validator
-from scripts.steps.train import Trainer, load_model, ResumeTrain
+from scripts.steps.ingestion import data_ingest
 from scripts.steps.log_mlflow import register_model
-from scripts.config.configuration import ConfigurationManager
-from scripts.entity.entity import DataIngestionConfig, DataSetConfig, TrainLogConfig, Params, TresholdMetrics
 from scripts.steps.best_model import production_model
-from typing import Annotated, Any, Dict, Tuple
-import logging
-from ultralytics import YOLO
-from zenml import ArtifactConfig, step, log_artifact_metadata
-from mlflow.tracking import MlflowClient
+from scripts.steps.train import Trainer, load_model, ResumeTrain
+from scripts.entity.entity import DataIngestionConfig, DataSetConfig, TrainLogConfig, Params, TresholdMetrics
+
 
 
 
@@ -28,7 +25,6 @@ def data_pipeline(config: DataIngestionConfig,
     if parameters.resume == True:
 
         yolo_model = load_model(trainlog_config.model)
-        
         trained_model, metrics, names, save_dir, csv_string = ResumeTrain(config=trainlog_config,
                                                     val_config=config,
                                                     params=parameters,

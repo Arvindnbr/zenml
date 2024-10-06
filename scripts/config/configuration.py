@@ -38,7 +38,8 @@ class ConfigurationManager:
             model= config.model,
             mlflow_uri= config.mlflow_uri,
             experiment_name= config.experiment_name,
-            model_name= config.model_name
+            model_name= config.model_name,
+            runs_root= self.config.artifacts_root
             )
         return trainlogconfig
     
@@ -66,10 +67,13 @@ class ConfigurationManager:
     
     def get_evaluation(self)-> Evaluation:
         eval = self.config.evaluation
-        eval = Evaluation(
-            name = eval.name
+        evals = Evaluation(
+            name = eval.name,
+            version = eval.version,
+            data_source= eval.data_source,
+            save_dir= eval.save_dir
         )
-        return eval
+        return evals
 
 
 

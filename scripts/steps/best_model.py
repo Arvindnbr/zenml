@@ -1,8 +1,7 @@
-from typing import Annotated, Any, Dict, Tuple
+from typing import Annotated, Tuple
 import mlflow
 import logging
 from zenml import step, ArtifactConfig
-from ultralytics import YOLO
 from dataclasses import asdict
 from zenml.logger import get_logger
 from scripts.config.configuration import TresholdMetrics
@@ -16,24 +15,17 @@ class ProductionModel:
         self.client = mlflow.tracking.MlflowClient()
 
     def get_registered_model_name_from_run(self,run_id: str) -> str:
-        # Search for all registered models
         registered_models = self.client.search_registered_models()
 
-        # Iterate through all registered models
         for model in registered_models:
-            # Get all versions of the model
             for version in model.latest_versions:
-                # Check if the run ID matches the input run_id
                 if version.run_id == run_id:
                     logging.info(f"{model.name} is registered under {run_id}")
                     return model.name
                     
-        
-        # If no matching model is found, return None or an appropriate message
         return None
 
     def list_models_and_versions(self, name=None):
-        # Get all registered models
         if name:
             registered_models = self.client.search_registered_models(filter_string="name LIKE '%'")
         
@@ -43,7 +35,6 @@ class ProductionModel:
             model_name = model.name
             models_info[model_name] = []
 
-            # Get all versions of the registered model
             versions = model.latest_versions
             
             for version in versions:

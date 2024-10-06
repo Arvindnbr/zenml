@@ -5,10 +5,8 @@ from scripts.utils.log import logger
 from scripts.entity.exception import AppException
 from scripts.utils.common import update_train_yaml
 from scripts.config.configuration import DataIngestionConfig
-from typing import Annotated, Any, Dict, Tuple
-from zenml.client import Client
+from typing import Annotated, Tuple
 from zenml import save_artifact
-from pathlib import Path
 
 logger = get_logger(__name__)
 

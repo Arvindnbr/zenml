@@ -8,10 +8,9 @@ from sklearn.model_selection import train_test_split
 from zenml import step, ArtifactConfig, log_artifact_metadata, save_artifact
 from zenml.logger import get_logger
 from scripts.entity.exception import AppException
-from typing import Annotated, Any, Dict, Tuple
-from scripts.config.configuration import ConfigurationManager
-from scripts.utils.common import get_highest_train_folder, update_train_yaml
-from scripts.config.configuration import Params
+from typing import Annotated, Any, Dict
+from scripts.utils.common import update_train_yaml, start_tensorboard
+from scripts.config.configuration import Params, TrainLogConfig
 from scripts.materializer.yolo_materializer import UltralyticsMaterializer
 
 
@@ -116,6 +115,7 @@ def Retrain_dataset(data_dir:Annotated[str, "Dataset_path"]
 
 @step(output_materializers={"Trained_YOLO": UltralyticsMaterializer}, enable_cache=False)
 def retrain(config: Params, 
+            train_config: TrainLogConfig,
             dataset: Annotated[str, "Dataset_path"], 
             yolo_model: YOLO) -> tuple[Annotated[YOLO, ArtifactConfig(name="Trained_YOLO", is_model_artifact=True)],
                                        Annotated[Dict[str, Any], "validation_metrics"],
@@ -136,7 +136,11 @@ def retrain(config: Params,
         logging.info(data_path)
 
     model = yolo_model
-
+    project_dir = f"{train_config.runs_root}/{train_config.experiment_name}"
+    
+    start_tensorboard(logdir=f"{project_dir}/{train_config.model_name}",
+                      port=6010)
+    
     trained = model.train(
                 data=data_path,
                 optimizer = config.optimizer,
@@ -147,12 +151,15 @@ def retrain(config: Params,
                 resume = config.resume,
                 seed = config.seed,
                 imgsz = config.imgsz,
+                project = project_dir,
+                name = train_config.model_name,
                 patience = 10)
-    train_folder = get_highest_train_folder("runs/detect")
-    save_dir = f"runs/detect/{train_folder}"
+    
+    save_dir = str(trained.save_dir)
     log_artifact_metadata(artifact_name="Trained_YOLO",
                           metadata={"metrics": trained.results_dict, 
                                     "names": model.names, 
                                     "Save directory": save_dir},)
     
     return model, trained.results_dict, model.names, save_dir
+    

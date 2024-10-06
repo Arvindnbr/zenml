@@ -12,11 +12,11 @@ ultralytics
 ensure==1.0.2
 python-box==6.0.2
 joblib
-mlflow
+mlflow== 2.16.0    #also supports 2.16.2
 onnxruntime
-zenml
+zenml== 0.65.0      #also supports 0.66
 zenml[server]   
 torchmetrics
 torchmetrics[detection]
-dvc
+tensorboard
 -e . 

@@ -1,5 +1,5 @@
-import os, re, random
-import yaml
+import os, re, random, subprocess, time
+import yaml, webbrowser
 from scripts.utils.log import logger
 import json
 from ensure import ensure_annotations
@@ -145,4 +145,39 @@ def get_images(directory):
     images_list = [(image_file.name, str(image_file)) for image_file in image_files]
     
     return images_list
+
+def find_image_file(folder, filename):
+    """
+    returns image path with extension if it exists
+    
+    :param folder: the folder path to check
+    :param filename: filename to check
+    :return: filepath if it exists, else none
+    """
+    extension = ['jpg','jpeg','png']
+    for ext in extension:
+        image_path = os.path.join(folder,f"{filename}.{ext}")
+        if os.path.exists(image_path):
+            return image_path
+    return None
+
+
+def start_tensorboard(logdir="runs/", port=6006):
+    """
+    Start TensorBoard as a subprocess.
+    
+    Parameters:
+    logdir (str): Directory where TensorBoard will look for logs.
+    port (int): Port on which TensorBoard will run.
+    """
+    tensorboard_cmd = f"tensorboard --logdir={logdir} --port={port}"
+    print(f"Starting TensorBoard on port {port}, logs at {logdir}")
+    process = subprocess.Popen(tensorboard_cmd, shell=True)
+    tensorboard_url = f"http://localhost:{port}"
+    print(f"Opening browser to {tensorboard_url}")
+    webbrowser.open(tensorboard_url)
+
+    time.sleep(5)
+
+    return process
 
