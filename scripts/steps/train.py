@@ -29,7 +29,7 @@ class ModelTrainer:
         self.val = val
 
     def validation_status(self, status):
-        status_file = f"{self.val.root_dir}/data_validation/status.txt"
+        status_file = f"{self.val.unzip_dir}/data_validation/status.txt"
         with open(status_file, 'r') as file:
             status = file.read().strip()
         key, value = status.split(':')

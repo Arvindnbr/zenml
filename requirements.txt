@@ -19,4 +19,5 @@ zenml[server]
 torchmetrics
 torchmetrics[detection]
 tensorboard
+onnx
 -e . 

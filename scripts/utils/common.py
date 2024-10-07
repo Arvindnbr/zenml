@@ -1,16 +1,12 @@
 import os, re, random, subprocess, time
 import yaml, webbrowser
 from scripts.utils.log import logger
-import json
+import json, base64
 from ensure import ensure_annotations
 from box import ConfigBox
 from box.exceptions import BoxValueError
 from pathlib import Path
-from typing import Any
-import base64
-from ultralytics import YOLO
-from ultralytics.engine.trainer import BaseTrainer
-from ultralytics.utils import LOGGER
+
 
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
@@ -100,7 +96,6 @@ def get_random_file_from_folder(folder_path):
         return None
 
 #yolo callback
-
 best_loss = float('inf')
 wait = 0
 patience = 10
@@ -122,14 +117,6 @@ def early_stopping_callback(epoch, logs):
                 model.stop_training = True
             print(f"Epoch {epoch + 1}: Improvement {improvement:.2f}%, Best Loss {best_loss:.4f}")
 
-# def indices(base_set: list, new_set: list):
-#     base_set = [item.lower() for item in base_set]
-#     new_set = [item.lower() for item in new_set]
-#     new_indices =[]
-#     for item in new_set:
-#         indices = [i for i, x in enumerate(base_set) if x == item]
-#         new_indices.extend(indices)
-#     return new_indices
 
 def get_images(directory):
     """
@@ -177,7 +164,7 @@ def start_tensorboard(logdir="runs/", port=6006):
     print(f"Opening browser to {tensorboard_url}")
     webbrowser.open(tensorboard_url)
 
-    time.sleep(5)
+    time.sleep(15)
 
     return process
 

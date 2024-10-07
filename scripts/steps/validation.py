@@ -48,12 +48,12 @@ class DataValidation:
     def validate_files(self, current_path)-> bool:
         try:
             validation_status = None
-            validation_path = f"{self.config.root_dir}/data_validation"
+            validation_path = f"{self.config.unzip_dir}/data_validation"
             all_files = os.listdir(current_path)
             os.makedirs(validation_path, exist_ok=True)
             status_file = f"{validation_path}/status.txt"
             for file in all_files:
-                if file not in ['train', 'valid', 'data.yaml']:
+                if file not in ['train', 'valid', 'test','data.yaml']:
                     validation_status = False
                     with open(status_file,'w') as f:
                         f.write(f"validation status: {validation_status}")

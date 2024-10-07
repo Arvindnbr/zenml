@@ -2,15 +2,17 @@
 import os
 import tempfile
 from typing import Any, ClassVar, Type
-from scripts.utils.common import get_highest_train_folder
+from scripts.config.configuration import ConfigurationManager
 from ultralytics import YOLO
 from zenml.integrations.pytorch.materializers.pytorch_module_materializer import (
     PyTorchModuleMaterializer,
 )
 from zenml.io import fileio
 
-DEFAULT_FILENAME = "objdet.pt"
+DEFAULT_FILENAME = "YOLOdet.pt"
 
+config = ConfigurationManager()
+trainconfig = config.get_train_log_config()
 
 class UltralyticsMaterializer(PyTorchModuleMaterializer):
     """Base class for ultralytics YOLO models."""
@@ -47,7 +49,7 @@ class UltralyticsMaterializer(PyTorchModuleMaterializer):
             model: A ultralytics YOLO model.
         """
         filepath = os.path.join(self.uri, DEFAULT_FILENAME)
-        train = get_highest_train_folder("runs/detect")
-        modelpath = f"runs/detect/{train}/weights/best.pt"
+        project_root = f"{trainconfig.runs_root}/{trainconfig.experiment_name}/{trainconfig.model_name}"
+        modelpath = f"{project_root}/weights/best.pt"
 
         fileio.copy(modelpath, filepath)
