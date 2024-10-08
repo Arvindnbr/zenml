@@ -34,6 +34,18 @@ class DataValidation:
                             corrupted.append(file)
         return corrupted
     
+    def validate_yaml(self, current_path):
+        with open(f"{current_path}/data.yaml", "r") as file:
+            yml = yaml.safe_load(file)
+        classes = self.config.classes
+        nc = len(classes)
+        if yml.get('nc') == nc and yml.get('names') == classes:
+            logger.info("yaml file yalidated sucessfully")
+            return True
+        else:
+            logger.info(f"Classes conflict: classes in the config mismatch with the classes in the training yaml {current_path}/data.yaml file")
+            return False
+    
     def validate_img(self, path):
         train_images = os.listdir(os.path.join(path,"train/images"))
         valid_images = os.listdir(os.path.join(path,"valid/images"))
@@ -52,33 +64,37 @@ class DataValidation:
             all_files = os.listdir(current_path)
             os.makedirs(validation_path, exist_ok=True)
             status_file = f"{validation_path}/status.txt"
-            for file in all_files:
-                if file not in ['train', 'valid', 'test','data.yaml']:
-                    validation_status = False
-                    with open(status_file,'w') as f:
-                        f.write(f"validation status: {validation_status}")
-                    
-                else:
-                    corrupted = self.validate_labels(current_path)
-                    val_status = self.validate_img(current_path)
-
-                    if val_status == False:
-                        print("Images and labels mismatch - unequal label and images")
+            if self.validate_yaml(current_path):
+                for file in all_files:
+                    if file not in ['train', 'valid', 'test','data.yaml']:
                         validation_status = False
                         with open(status_file,'w') as f:
                             f.write(f"validation status: {validation_status}")
-                    
-                    elif len(corrupted) > 0:
-                        print(f"labels out of index / corrupted labels : {corrupted}")
-                        validation_status = False
-                        with open(status_file,'w') as f:
-                            f.write(f"validation status: {validation_status}")
+                        
                     else:
-                        validation_status = True
-                        with open(status_file, 'w') as f:
-                            f.write(f"validation_status: {validation_status}")
-            print(all_files,"\nValidated successfully")
-            return validation_status
+                        corrupted = self.validate_labels(current_path)
+                        val_status = self.validate_img(current_path)
+
+                        if val_status == False:
+                            print("Images and labels mismatch - unequal label and images")
+                            validation_status = False
+                            with open(status_file,'w') as f:
+                                f.write(f"validation status: {validation_status}")
+                        
+                        elif len(corrupted) > 0:
+                            print(f"labels out of index / corrupted labels : {corrupted}")
+                            validation_status = False
+                            with open(status_file,'w') as f:
+                                f.write(f"validation status: {validation_status}")
+                        else:
+                            validation_status = True
+                            with open(status_file, 'w') as f:
+                                f.write(f"validation_status: {validation_status}")
+                print(all_files,"\nValidated successfully")
+                return validation_status
+            else:
+                logger.info(f"validation failed.. reverify the training yaml file {current_path}")
+                raise ValueError("yaml file value error")
         except Exception as e:
             raise AppException(e,sys)
         
