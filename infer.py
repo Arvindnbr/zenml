@@ -3,10 +3,8 @@ import sys, os, yaml
 from mlflow import MlflowClient
 from zenml.logger import get_logger
 from zenml import pipeline
-from ultralytics import YOLO
-from zenml.client import Client
 from scripts.steps.inference import yolov8_validation_step
-from scripts.steps.train import load_model, Trainer
+from scripts.steps.train import load_model
 from scripts.steps.log_mlflow import register_model
 from scripts.steps.best_model import production_model
 from scripts.config.configuration import ConfigurationManager
@@ -38,9 +36,11 @@ def inference() -> Annotated[str,"dataset_root"]:
     run_info = client.get_run(production_run_id)
     artifact_uri = run_info.info.artifact_uri.replace("mlflow-artifacts:", "mlartifacts")
     model = f"{artifact_uri}/model/artifacts/best.pt"
+
     with open(f"{artifact_uri}/args.yaml", 'r') as f:
         args = yaml.safe_load(f)
     dataset_root = os.path.split(args.get('data'))[0]
+
     val_status, metric = yolov8_validation_step(model_path=model,
                                         threshold=threshold.mAP50,
                                         validation_name = eval.name

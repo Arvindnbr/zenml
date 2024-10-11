@@ -6,8 +6,8 @@ from dataclasses import asdict
 from zenml.logger import get_logger
 from scripts.config.configuration import TresholdMetrics
 
-logger = get_logger(__name__)
 
+logger = get_logger(__name__)
 
 
 class ProductionModel:

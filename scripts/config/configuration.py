@@ -1,5 +1,5 @@
 
-from scripts.utils.common import read_yaml, create_directories
+from scripts.utils.common import read_yaml, create_directories, load_params_from_yaml
 from scripts.constant import *
 from scripts.entity.entity import *
 
@@ -8,6 +8,7 @@ from scripts.entity.entity import *
 class ConfigurationManager:
     def __init__(self,config_filepath = CONFIG_FILE_PATH):
         self.config = read_yaml(config_filepath)
+        self.configparam = load_params_from_yaml(config_filepath)
         create_directories([self.config.artifacts_root])
 
     def get_dataingestion_config(self)-> DataIngestionConfig:
@@ -44,7 +45,7 @@ class ConfigurationManager:
         return trainlogconfig
     
     def get_params(self)-> Params:
-        param = self.config.param
+        param = self.configparam
         params = Params(
             optimizer = param.optimizer,
             lr0 = param.lr0,
@@ -53,8 +54,39 @@ class ConfigurationManager:
             epochs = param.epochs,
             resume = param.resume,
             seed = param.seed,
-            imgsz = param.imgsz
-        )
+            imgsz = param.imgsz,
+            patience = param.patience,
+            cache = param.cache, 	       
+            workers = param.workers,	         
+            cos_lr = param.cos_lr,	     
+            close_mosaic = param.close_mosaic, 	   
+            amp = param.amp,
+            lrf = param.lrf, 	         
+            momentum = param.momentum, 	   
+            weight_decay = param.weight_decay, 
+            warmup_epochs = param.warmup_epochs,
+            warmup_momentum = param.warmup_momentum,
+            warmup_bias_lr = param.warmup_bias_lr,
+            box = param.box,
+            cls = param.cls,
+            hsv_h = param.hsv_h,               
+            hsv_s = param.hsv_s,                  
+            hsv_v = param.hsv_v,                
+            degrees = param.degrees,               
+            translate = param.translate,           
+            scale = param.scale,        
+            shear = param.shear,               
+            perspective = param.perspective,           
+            flipud = param.flipud,                
+            fliplr = param.fliplr,           
+            bgr = param.bgr,             
+            mosaic = param.mosaic,                 
+            mixup = param.mosaic,             
+            copy_paste = param.copy_paste,             
+            auto_augment = param.auto_augment, 
+            erasing = param.erasing,     
+            crop_fraction = param.crop_fraction,
+            )
         return params
     
     def get_threshold(self)-> TresholdMetrics:

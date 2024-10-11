@@ -6,6 +6,8 @@ from ensure import ensure_annotations
 from box import ConfigBox
 from box.exceptions import BoxValueError
 from pathlib import Path
+from dataclasses import asdict
+from scripts.entity.entity import Params
 
 
 
@@ -168,3 +170,18 @@ def start_tensorboard(logdir="runs/", port=6006):
 
     return process
 
+def load_params_from_yaml(file_path: str) -> ConfigBox:
+    with open(file_path, 'r') as file:
+        config = yaml.safe_load(file)
+
+    yaml_param = config.get('param',{})
+    default_params = asdict(Params(epochs=0, resume=False))  
+    # dummy required values
+    #merged_dict = {key: yaml_param.get(key, default_params[key]) for key in default_params}
+    merged_dict = {}
+
+    for key in default_params:
+        merged_dict[key] = yaml_param.get(key, default_params[key])
+    
+    
+    return ConfigBox(merged_dict)

@@ -1,9 +1,9 @@
 from zenml import step, ArtifactConfig
 from zenml.logger import get_logger
-import os,sys, yaml
+import os,sys, yaml, shutil
 from scripts.utils.log import logger
 from scripts.entity.exception import AppException
-from scripts.utils.common import update_train_yaml
+from scripts.utils.common import update_train_yaml, find_image_file
 from scripts.config.configuration import DataIngestionConfig
 from typing import Annotated, Tuple
 from zenml import save_artifact
@@ -19,19 +19,21 @@ class DataValidation:
     def validate_labels(self, path):
         train_labels = f"{path}/train/labels"
         valid_labels = f"{path}/valid/labels"
+        test_labels = f"{path}/test/labels"
         
         with open(f"{path}/data.yaml", 'r') as y:
             yaml_dump = yaml.safe_load(y)
         
         num_classes = yaml_dump['nc']
         corrupted = []
-        for i in [train_labels,valid_labels]:
+        for i in [train_labels,valid_labels, test_labels]:       
             for file in os.listdir(i):
-                with open(os.path.join(i,file), 'r') as f:
-                    for line in f.readlines():
-                        part = line.strip().split()
-                        if int(part[0]) > num_classes:
-                            corrupted.append(file)
+                if file.endswith('.txt'): 
+                    with open(os.path.join(i,file), 'r') as f:
+                        for line in f.readlines():
+                            part = line.strip().split()
+                            if int(part[0]) > num_classes:
+                                corrupted.append(f"{i}/{file}")
         return corrupted
     
     def validate_yaml(self, current_path):
@@ -83,6 +85,13 @@ class DataValidation:
                         
                         elif len(corrupted) > 0:
                             print(f"labels out of index / corrupted labels : {corrupted}")
+                            # move the corrupted labels to data validation folder.
+                            for i in corrupted:
+                                shutil.move(i, validation_path)
+                                same_image = find_image_file(os.path.split(i.replace('/labels/','/images/'))[0], os.path.basename(i).split('.')[0])
+                                if same_image:
+                                    shutil.move(same_image, validation_path)
+                            
                             validation_status = False
                             with open(status_file,'w') as f:
                                 f.write(f"validation status: {validation_status}")
